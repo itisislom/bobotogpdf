@@ -6,213 +6,201 @@
   <title>BOBOTOG' PDF MAKER</title>
   <style>
     :root{
-      --bg:#f3f4f6;
+      --bg:#f7f7f9;
       --card:#ffffff;
-      --accent:#2563eb;
-      --good:#16a34a;
+      --accent:#0f172a;
       --muted:#6b7280;
-      --radius:12px;
+      --radius:10px;
+      --gap:12px;
+      --shadow: 0 6px 20px rgba(2,6,23,0.04);
+      --max-width:1100px;
     }
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family:Inter, Roboto, Arial, sans-serif;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,"Noto Sans",sans-serif;
       background:var(--bg);
-      color:#111827;
-      padding:18px;
+      color:#0b1220;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
       display:flex;
       justify-content:center;
-    }
-    .wrap{
-      width:100%;
-      max-width:1100px;
-    }
-    header{
-      display:flex;
-      align-items:center;
-      gap:16px;
-      margin-bottom:14px;
-    }
-    header h1{margin:0;font-size:20px}
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow:0 6px 18px rgba(15,23,42,0.06);
-      margin-bottom:12px;
+      padding:20px;
     }
 
-    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .col { display:flex; flex-direction:column; gap:8px; }
+    .wrap{width:100%;max-width:var(--max-width)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:var(--gap);margin-bottom:14px}
+    header .title{display:flex;align-items:center;gap:14px}
+    header h1{margin:0;font-size:18px;font-weight:700}
+    header p{margin:0;color:var(--muted);font-size:13px}
 
-    input[type="file"] { padding:6px; }
-    .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);}
 
-    .btn {
-      background:var(--accent);
-      color:white;
-      border:0;
-      padding:8px 12px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    .btn.secondary { background:#374151; }
-    .btn.danger { background:#ef4444; }
-    .btn.ghost { background:transparent; color:var(--muted); border:1px solid #e5e7eb; }
+    .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .col{display:flex;flex-direction:column;gap:8px}
 
-    .file-list { margin-top:12px; display:flex; flex-direction:column; gap:8px; }
-    .file-item {
-      display:flex; align-items:center; gap:12px;
-      padding:10px; border-radius:10px; border:1px solid #e6e7eb;
-    }
-    .thumb { width:120px; height:80px; object-fit:cover; border-radius:6px; background:#f9fafb; }
-    .file-meta { flex:1; display:flex; justify-content:space-between; gap:12px; align-items:center; }
-    .file-name { font-weight:600; font-size:14px; color:#111827; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    input[type="file"]{padding:8px;border-radius:8px;border:1px solid #e6e7eb;cursor:pointer}
+    input[type="text"], select{padding:10px;border-radius:8px;border:1px solid #e6e7eb;min-width:150px}
 
-    .file-actions { display:flex; gap:6px; }
+    .btn{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;transition:all 0.2s}
+    .btn:hover{opacity:0.9;transform:translateY(-1px)}
+    .btn:disabled{opacity:0.5;cursor:not-allowed}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #e6e7eb}
+    .btn.secondary{background:#374151}
+    .btn.danger{background:#ef4444}
 
-    label.range-label { font-size:13px; color:var(--muted); }
-    input[type="range"] { width:220px; }
+    .file-list{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+    .file-item{display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;border:1px solid #eef2f7;background:#fff}
+    .thumb{width:120px;height:80px;object-fit:cover;border-radius:6px;background:#f8fafc}
+    .file-meta{flex:1;display:flex;flex-direction:column;gap:6px}
+    .file-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .file-name{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .small{font-size:13px;color:var(--muted)}
 
-    .small { font-size:13px; color:var(--muted); }
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .editor{width:100%;max-width:1100px;background:var(--card);border-radius:12px;padding:12px;max-height:90vh;overflow:auto}
+    .editor-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .editor-canvas-wrap{background:#111827;padding:8px;display:flex;justify-content:center;align-items:center;border-radius:8px}
+    canvas.editor-canvas{background:#fff;max-width:100%;height:auto;display:block;border-radius:4px}
 
-    /* Editor modal */
-    .modal-backdrop {
-      position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.5);
-      display:flex; align-items:center; justify-content:center; z-index:50;
-    }
-    .editor {
-      width:95%; max-width:1100px; max-height:90vh;
-      background:var(--card); border-radius:12px; padding:12px; overflow:auto;
-    }
-    .editor-top { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .editor-canvas-wrap { background:#111827; padding:8px; display:flex; justify-content:center; align-items:center; border-radius:8px; }
-    canvas.editor-canvas { background:#fff; max-width:100%; height:auto; display:block; border-radius:4px; }
+    .editor-grid{display:grid;grid-template-columns:1fr 320px;gap:12px}
 
-    .help { font-size:13px; color:var(--muted); margin-top:6px; }
+    .bottom-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}
+    .logo-slot{display:flex;align-items:center;gap:10px}
+    .logo-slot img{width:40px;height:40px;object-fit:contain}
 
-    .bottom-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; }
-    .logo-slot { display:flex; align-items:center; gap:10px; }
-    .logo-slot img { width:40px; height:40px; object-fit:contain; }
-
-    @media (max-width:720px){
+    @media (max-width:900px){
+      header{flex-direction:column;align-items:flex-start}
+      .controls{width:100%;justify-content:space-between}
+      .editor-grid{grid-template-columns:1fr}
+      .file-list{grid-template-columns:1fr}
       .thumb{width:96px;height:64px}
-      input[type="range"]{width:150px}
-      .editor{ padding:8px }
+    }
+
+    @media (max-width:520px){
+      body{padding:12px}
+      .btn{padding:10px 12px;font-size:14px}
+      .controls{flex-direction:column;align-items:stretch}
+      input[type="file"], input[type="text"], select{width:100%}
+      .file-item{flex-direction:row}
+      .editor{padding:10px}
+      header h1{font-size:16px}
+      header p{font-size:12px}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1 id="siteTitle">BOBOTOG' PDF MAKER</h1>
-      <div class="small" id="siteDesc">Загрузи фото — отредактируй — скачай PDF. Каждое фото сохраняет своё соотношение сторон.</div>
+      <div class="title">
+        <h1 id="siteTitle">BOBOTOG' PDF MAKER</h1>
+        <p id="siteDesc">Yuklang, tahrirlang va PDF yuklab oling. Har bir rasm o'z nisbatini saqlaydi.</p>
+      </div>
+      <div class="small">v2.0 — Professional</div>
     </header>
 
     <div class="card">
-      <div class="row" style="justify-content:space-between;">
-        <div class="col" style="flex:1;">
-          <label class="small" id="labelChoose">Выбрать фото (можно несколько)</label>
+      <div class="controls" style="justify-content:space-between">
+        <div class="col" style="flex:1;min-width:220px">
+          <label class="small" id="labelChoose">Rasm tanlang (bir nechta)</label>
           <input id="fileInput" type="file" accept="image/*" multiple>
         </div>
 
-        <div style="min-width:220px;">
-          <label class="small" id="labelPdfName">Имя PDF</label>
-          <input id="filename" type="text" value="documents" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;">
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button id="processAllBtn" class="btn secondary">Применить к всем</button>
-            <button id="mergeBtn" class="btn ghost">Объединить</button>
-            <button id="downloadBtn" class="btn">Скачать PDF</button>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="col">
+            <label class="small" id="labelPdfName">PDF nomi</label>
+            <input id="filename" type="text" value="documents" style="min-width:180px">
           </div>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
-            <select id="langSelect" style="padding:6px;border-radius:8px;border:1px solid #e5e7eb;">
-              <option value="uz">O'zbek (lotin)</option>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button id="mergeBtn" class="btn ghost">Birlashtirish</button>
+            <button id="downloadBtn" class="btn">PDF yuklab olish</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <select id="langSelect">
+              <option value="uz">O'zbek</option>
               <option value="ru">Русский</option>
             </select>
-            <div class="small" id="langNote">Язык</div>
+            <div class="small" id="langNote">Til</div>
           </div>
-          <div class="small" id="supportNote">Поддерживается: crop, rotate, flip, grayscale. Просмотр в реальном времени.</div>
         </div>
       </div>
 
       <div id="fileList" class="file-list"></div>
-    </div>
 
-    <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-      <div class="card small" style="padding:10px;" id="tipCrop">Совет: Нажми «Редактировать» у фото — там можно выделить область мышью (или пальцем) и нажать «Apply Crop».</div>
-      <div class="card small" style="padding:10px;" id="tipPdf">PDF страницы будут иметь такие же пропорции, как конечные изображения.</div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+        <div class="small" id="supportNote">Qo'llab-quvvatlanadi: kesish, burish, aks ettirish, oq-qora. Jonli ko'rinish.</div>
+        <div class="small" id="tipPdf">PDF sahifalar rasmlar bilan bir xil nisbatda bo'ladi.</div>
+      </div>
     </div>
 
     <div class="bottom-bar">
       <div class="logo-slot">
-        <img id="siteIcon" src="icon.png" alt="icon" onerror="this.style.opacity=0.4; this.style.filter='grayscale(80%)';">
+        <img id="siteIcon" src="icon.png" alt="BOBOTOG'" onerror="this.style.opacity=0.4; this.style.filter='grayscale(80%)';">
         <div>
-          <div class="small">Logo: icon.png</div>
-          <div class="small" id="slogan">Made by Sadriddinov Islom (C)</div>
+          <div class="small" id="slogan">Sadriddinov Islom tomonidan yaratilgan ©</div>
         </div>
       </div>
-      <div class="small">v1 — BOBOTOG' PDF MAKER</div>
+      <div class="small">Barqaror • Oddiy • Moslashuvchan</div>
     </div>
+
   </div>
 
-  <!-- Editor modal (hidden) -->
-  <div id="editorModal" style="display:none;" class="modal-backdrop">
+  <div id="editorModal" class="modal-backdrop">
     <div class="editor card">
       <div class="editor-top">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <strong id="editorTitle">Редактирование</strong>
+        <div style="display:flex;align-items:center;gap:12px">
+          <strong id="editorTitle">Tahrirlash</strong>
           <div class="small" id="editorInfo"></div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button id="resetBtn" class="btn ghost">Сброс</button>
-          <button id="applyBtn" class="btn">Сохранить</button>
-          <button id="closeEditor" class="btn secondary">Закрыть</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="resetBtn" class="btn ghost">Qayta tiklash</button>
+          <button id="applyBtn" class="btn">Saqlash</button>
+          <button id="closeEditor" class="btn secondary">Yopish</button>
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
-        <div style="flex:1; min-width:280px;">
+      <div class="editor-grid">
+        <div>
           <div class="editor-canvas-wrap">
             <canvas id="editorCanvas" class="editor-canvas"></canvas>
           </div>
-          <div class="help" id="helpCrop">Перетащи мышью, чтобы выбрать область обрезки. После выделения нажми «Apply Crop». Для отмены выделения нажми Reset.</div>
+          <div class="small" style="margin-top:8px" id="helpCrop">Kesish uchun sichqoncha bilan hudud belgilang va "Kesishni qo'llash" tugmasini bosing.</div>
         </div>
 
-        <div style="width:320px; min-width:240px;">
-          <div style="display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div style="display:flex;flex-direction:column;gap:8px">
             <div>
-              <label class="range-label">Контраст: <span id="edContrastVal">1.20</span></label><br>
-              <input id="edContrast" type="range" min="0.4" max="3" step="0.05" value="1.2">
+              <label class="small">Kontrast: <span id="edContrastVal">1.20</span></label>
+              <input id="edContrast" type="range" min="0.4" max="3" step="0.05" value="1.2" style="width:100%">
             </div>
 
             <div>
-              <label class="small"><input id="edBW" type="checkbox"> Чёрно-белое (grayscale)</label>
+              <label class="small"><input id="edBW" type="checkbox"> Oq-qora rejim</label>
             </div>
 
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button id="rotLeft" class="btn ghost">⟲ 90°</button>
               <button id="rotRight" class="btn ghost">⟳ 90°</button>
-              <button id="flipH" class="btn ghost">↔ Flip H</button>
-              <button id="flipV" class="btn ghost">↕ Flip V</button>
-              <button id="applyCrop" class="btn ghost">Apply Crop</button>
+              <button id="flipH" class="btn ghost">↔ Gorizontal</button>
+              <button id="flipV" class="btn ghost">↕ Vertikal</button>
+              <button id="applyCrop" class="btn ghost">Kesishni qo'llash</button>
             </div>
 
-            <div style="display:flex;gap:6px;">
-              <button id="toPrev" class="btn ghost">← Пред</button>
-              <button id="toNext" class="btn ghost">След →</button>
+            <div style="display:flex;gap:6px">
+              <button id="toPrev" class="btn ghost">← Oldingi</button>
+              <button id="toNext" class="btn ghost">Keyingi →</button>
             </div>
 
-            <div style="margin-top:8px;">
-              <div class="small">Размер (оригинал): <span id="origSize">—</span></div>
-              <div class="small">Текущая трансформация: <span id="curTransform">—</span></div>
+            <div style="margin-top:8px">
+              <div class="small">Asl o'lcham: <span id="origSize">—</span></div>
+              <div class="small">Hozirgi o'zgarishlar: <span id="curTransform">—</span></div>
             </div>
 
-            <div style="margin-top:10px; display:flex; gap:8px;">
-              <button id="applyAndClose" class="btn">Сохранить и закрыть</button>
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button id="applyAndClose" class="btn" style="width:100%">Saqlash va yopish</button>
             </div>
           </div>
         </div>
@@ -223,17 +211,14 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-  // BOBOTOG' PDF MAKER — single file with language support, merge feature, localStorage for language
   (function(){
     const fileInput = document.getElementById('fileInput');
     const fileListEl = document.getElementById('fileList');
     const filenameInput = document.getElementById('filename');
-    const processAllBtn = document.getElementById('processAllBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const mergeBtn = document.getElementById('mergeBtn');
     const langSelect = document.getElementById('langSelect');
 
-    // editor elements
     const editorModal = document.getElementById('editorModal');
     const editorCanvas = document.getElementById('editorCanvas');
     const edContrast = document.getElementById('edContrast');
@@ -254,6 +239,7 @@
     const curTransformEl = document.getElementById('curTransform');
     const toPrev = document.getElementById('toPrev');
     const toNext = document.getElementById('toNext');
+    const helpCrop = document.getElementById('helpCrop');
 
     const langNote = document.getElementById('langNote');
     const siteTitle = document.getElementById('siteTitle');
@@ -261,56 +247,124 @@
     const labelChoose = document.getElementById('labelChoose');
     const labelPdfName = document.getElementById('labelPdfName');
     const supportNote = document.getElementById('supportNote');
-    const tipCrop = document.getElementById('tipCrop');
     const tipPdf = document.getElementById('tipPdf');
+    const slogan = document.getElementById('slogan');
 
-    let files = []; // array of objects {id,name,file, originalDataUrl, previewUrl, settings: {...}, editedDataUrl, selected}
+    let files = [];
     let editingIndex = -1;
 
     function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
-    // --- language support (uz-latin and ru) persisted in localStorage key 'bobotog_lang'
     const TRANSLATIONS = {
       ru: {
-        choose: 'Выбрать фото (можно несколько)',
-        pdfName: 'Имя PDF',
-        applyAll: 'Применить к всем',
+        siteTitle: 'BOBOTOG\' PDF MAKER',
+        siteDesc: 'Загружайте фото, редактируйте и скачивайте PDF. Каждое изображение сохраняет свои пропорции.',
+        choose: 'Выберите изображения',
+        pdfName: 'Название PDF',
         download: 'Скачать PDF',
         merge: 'Объединить',
         lang: 'Язык',
-        support: 'Поддерживается: crop, rotate, flip, grayscale. Просмотр в реальном времени.',
-        tipCrop: 'Совет: Нажми «Редактировать» у фото — там можно выделить область мышью (или пальцем) и нажать «Apply Crop».',
-        tipPdf: 'PDF страницы будут иметь такие же пропорции, как конечные изображения.'
+        support: 'Доступно: обрезка, поворот, отражение, чёрно-белое. Предпросмотр в реальном времени.',
+        tipPdf: 'Страницы PDF будут иметь те же пропорции, что и финальные изображения.',
+        slogan: 'Создано Sadriddinov Islom ©',
+        footer: 'Стабильно • Просто • Адаптивно',
+        editBtn: 'Редактировать',
+        deleteBtn: 'Удалить',
+        editorTitle: 'Редактирование',
+        reset: 'Сбросить',
+        save: 'Сохранить',
+        close: 'Закрыть',
+        saveClose: 'Сохранить и закрыть',
+        contrast: 'Контраст',
+        bw: 'Чёрно-белое',
+        rotLeft: '⟲ 90°',
+        rotRight: '⟳ 90°',
+        flipH: '↔ Горизонталь',
+        flipV: '↕ Вертикаль',
+        applyCrop: 'Применить обрезку',
+        prev: '← Предыдущее',
+        next: 'Следующее →',
+        origSize: 'Исходный размер',
+        curTransform: 'Текущие изменения',
+        helpCrop: 'Выделите область мышью и нажмите "Применить обрезку".',
+        generating: 'Создание PDF...',
+        merging: 'Объединение...',
+        noFiles: 'Нет файлов',
+        selectTwo: 'Выберите ровно 2 изображения для объединения',
+        merged: 'Изображения объединены и добавлены в список.',
+        selectArea: 'Сначала выделите область для обрезки.',
+        cropSet: 'Обрезка установлена. Нажмите "Сохранить", чтобы применить.'
       },
       uz: {
-        choose: 'Rasm tanlang (bir nechta tanlash mumkin)',
+        siteTitle: 'BOBOTOG\' PDF MAKER',
+        siteDesc: 'Yuklang, tahrirlang va PDF yuklab oling. Har bir rasm o\'z nisbatini saqlaydi.',
+        choose: 'Rasm tanlang (bir nechta)',
         pdfName: 'PDF nomi',
-        applyAll: "Hammasiga qo'llash",
-        download: 'PDF-ni yuklab olish',
+        download: 'PDF yuklab olish',
         merge: 'Birlashtirish',
         lang: 'Til',
-        support: "Qo'llab-quvvatlanadi: crop, rotate, flip, grayscale. Real vaqt rejimida ko'rish.",
-        tipCrop: "Maslahat: Rasm ustida 'Tahrirlash'ni bosing — sichqoncha (yoki barmoq) bilan kesish maydonini belgilang va 'Apply Crop'ni bosing.",
-        tipPdf: "PDF sahifalari yakuniy rasmning nisbatlarini saqlaydi."
+        support: 'Qo\'llab-quvvatlanadi: kesish, burish, aks ettirish, oq-qora. Jonli ko\'rinish.',
+        tipPdf: 'PDF sahifalar rasmlar bilan bir xil nisbatda bo\'ladi.',
+        slogan: 'Sadriddinov Islom tomonidan yaratilgan ©',
+        footer: 'Barqaror • Oddiy • Moslashuvchan',
+        editBtn: 'Tahrirlash',
+        deleteBtn: 'O\'chirish',
+        editorTitle: 'Tahrirlash',
+        reset: 'Qayta tiklash',
+        save: 'Saqlash',
+        close: 'Yopish',
+        saveClose: 'Saqlash va yopish',
+        contrast: 'Kontrast',
+        bw: 'Oq-qora rejim',
+        rotLeft: '⟲ 90°',
+        rotRight: '⟲ 90°',
+        flipH: '↔ Gorizontal',
+        flipV: '↕ Vertikal',
+        applyCrop: 'Kesishni qo\'llash',
+        prev: '← Oldingi',
+        next: 'Keyingi →',
+        origSize: 'Asl o\'lcham',
+        curTransform: 'Hozirgi o\'zgarishlar',
+        helpCrop: 'Kesish uchun sichqoncha bilan hudud belgilang va "Kesishni qo\'llash" tugmasini bosing.',
+        generating: 'PDF yaratilmoqda...',
+        merging: 'Birlashtirilmoqda...',
+        noFiles: 'Fayllar yo\'q',
+        selectTwo: 'Birlashtirish uchun aynan 2 ta rasm tanlang',
+        merged: 'Rasmlar birlashtirildi va ro\'yxatga qo\'shildi.',
+        selectArea: 'Avval kesish uchun hudud belgilang.',
+        cropSet: 'Kesish o\'rnatildi. Qo\'llash uchun "Saqlash" tugmasini bosing.'
       }
     };
 
     function setLang(lang){
-      const t = TRANSLATIONS[lang] || TRANSLATIONS.ru;
+      const t = TRANSLATIONS[lang] || TRANSLATIONS.uz;
+      siteTitle.textContent = t.siteTitle;
+      siteDesc.textContent = t.siteDesc;
       labelChoose.textContent = t.choose;
       labelPdfName.textContent = t.pdfName;
-      processAllBtn.textContent = t.applyAll;
       downloadBtn.textContent = t.download;
       mergeBtn.textContent = t.merge;
       langNote.textContent = t.lang;
       supportNote.textContent = t.support;
-      tipCrop.textContent = t.tipCrop;
       tipPdf.textContent = t.tipPdf;
-      // persist
+      slogan.textContent = t.slogan;
+      resetBtn.textContent = t.reset;
+      applyBtn.textContent = t.save;
+      closeEditorBtn.textContent = t.close;
+      applyAndClose.textContent = t.saveClose;
+      rotLeft.textContent = t.rotLeft;
+      rotRight.textContent = t.rotRight;
+      flipHBtn.textContent = t.flipH;
+      flipVBtn.textContent = t.flipV;
+      applyCropBtn.textContent = t.applyCrop;
+      toPrev.textContent = t.prev;
+      toNext.textContent = t.next;
+      edBW.nextSibling.textContent = ' ' + t.bw;
+      helpCrop.textContent = t.helpCrop;
+      
       try { localStorage.setItem('bobotog_lang', lang); } catch(e){}
     }
 
-    // init language from localStorage
     const savedLang = (function(){ try{return localStorage.getItem('bobotog_lang')||'uz'}catch(e){return 'uz'} })();
     langSelect.value = savedLang;
     setLang(savedLang);
@@ -354,12 +408,13 @@
     }
 
     function renderList(){
+      const t = TRANSLATIONS[langSelect.value];
       fileListEl.innerHTML = '';
       files.forEach((f, idx) => {
         const div = document.createElement('div');
         div.className = 'file-item';
-        const leftCol = document.createElement('div');
-        leftCol.style.display = 'flex'; leftCol.style.alignItems='center'; leftCol.style.gap='12px';
+        const left = document.createElement('div');
+        left.style.display='flex'; left.style.alignItems='center'; left.style.gap='12px';
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox'; checkbox.checked = !!f.selected; checkbox.style.width='18px'; checkbox.style.height='18px';
@@ -369,68 +424,101 @@
         thumb.className = 'thumb';
         thumb.src = f.editedDataUrl || f.previewUrl;
 
-        leftCol.appendChild(checkbox);
-        leftCol.appendChild(thumb);
+        left.appendChild(checkbox);
+        left.appendChild(thumb);
 
         const meta = document.createElement('div');
         meta.className = 'file-meta';
-        const left = document.createElement('div');
-        left.style.flex = '1';
-        left.innerHTML = `<div class="file-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
-          <div class="small">Оригинал: ${f.naturalWidth}×${f.naturalHeight} • Трансф.: R${f.settings.rotation} • ${f.settings.flipH?'H ':' '}${f.settings.flipV?'V ':' '}${f.settings.bw? 'BW':''}</div>`;
-        const actions = document.createElement('div');
-        actions.className = 'file-actions';
-        actions.innerHTML = `<div style="display:flex;gap:6px">
-          <button class="btn ghost" title="Редактировать" data-idx="${idx}">Редактировать</button>
-          <button class="btn ghost" title="Вверх" data-up="${idx}">↑</button>
-          <button class="btn ghost" title="Вниз" data-down="${idx}">↓</button>
-          <button class="btn danger" title="Удалить" data-del="${idx}">Удалить</button>
-        </div>`;
-        meta.appendChild(left);
-        meta.appendChild(actions);
+        meta.innerHTML = `<div class="file-row"><div style="flex:1"><div class="file-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="small">${t.origSize}: ${f.naturalWidth}×${f.naturalHeight}</div></div><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:6px"><button class='btn ghost' data-idx='${idx}'>${t.editBtn}</button><button class='btn ghost' data-up='${idx}'>↑</button><button class='btn ghost' data-down='${idx}'>↓</button></div><button class='btn danger' data-del='${idx}'>${t.deleteBtn}</button></div></div>`;
 
-        div.appendChild(leftCol);
+        div.appendChild(left);
         div.appendChild(meta);
         fileListEl.appendChild(div);
       });
 
-      // attach listeners
-      fileListEl.querySelectorAll('button[data-idx]').forEach(btn=>{
-        btn.onclick = (ev) => openEditor(parseInt(btn.dataset.idx));
-      });
-      fileListEl.querySelectorAll('button[data-up]').forEach(btn=>{
-        btn.onclick = () => {
-          const i = parseInt(btn.dataset.up);
-          if (i>0) { [files[i-1],files[i]] = [files[i],files[i-1]]; renderList(); }
-        };
-      });
-      fileListEl.querySelectorAll('button[data-down]').forEach(btn=>{
-        btn.onclick = () => {
-          const i = parseInt(btn.dataset.down);
-          if (i < files.length-1){ [files[i+1],files[i]] = [files[i],files[i+1]]; renderList(); }
-        };
-      });
-      fileListEl.querySelectorAll('button[data-del]').forEach(btn=>{
-        btn.onclick = () => {
-          const i = parseInt(btn.dataset.del);
-          files.splice(i,1); renderList();
-        };
-      });
+      fileListEl.querySelectorAll('button[data-idx]').forEach(btn=>{ btn.onclick = (ev) => openEditor(parseInt(btn.dataset.idx)); });
+      fileListEl.querySelectorAll('button[data-up]').forEach(btn=>{ btn.onclick = () => { const i = parseInt(btn.dataset.up); if (i>0) { [files[i-1],files[i]] = [files[i],files[i-1]]; renderList(); } }; });
+      fileListEl.querySelectorAll('button[data-down]').forEach(btn=>{ btn.onclick = () => { const i = parseInt(btn.dataset.down); if (i < files.length-1){ [files[i+1],files[i]] = [files[i],files[i+1]]; renderList(); } }; });
+      fileListEl.querySelectorAll('button[data-del]').forEach(btn=>{ btn.onclick = () => { const i = parseInt(btn.dataset.del); files.splice(i,1); renderList(); }; });
     }
 
-    // editor state for crop
     let isDragging = false;
     let dragStart = null;
-    let dragRect = null; // {x,y,w,h} in display canvas coords
-    let displayScale = 1; // img natural -> display
-    let currentImg = null; // Image object for editing (native resolution)
-    let displayToOriginal = 1; // multiply display coords to original
+    let dragRect = null;
+    let displayScale = 1;
+    let currentImg = null;
+    let displayToOriginal = 1;
+
+    // --- helper: преобразование координат между отображением и оригиналом с учётом поворотов и отражений ---
+    function mapDisplayRectToOriginal(rect, s){
+      // rect в координатах canvas (editorCanvas.width/height)
+      const w = editorCanvas.width, h = editorCanvas.height;
+      const cx = w/2, cy = h/2;
+      const angle = (((s.rotation % 360) + 360) % 360) * Math.PI/180;
+      const scaleX = s.flipH ? -1 : 1;
+      const scaleY = s.flipV ? -1 : 1;
+      const invScaleX = 1/scaleX; // = scaleX (±1)
+      const invScaleY = 1/scaleY;
+      const corners = [
+        {x: rect.x, y: rect.y},
+        {x: rect.x + rect.w, y: rect.y},
+        {x: rect.x, y: rect.y + rect.h},
+        {x: rect.x + rect.w, y: rect.y + rect.h}
+      ];
+      const mapped = corners.map(pt => {
+        const dx = pt.x - cx, dy = pt.y - cy;
+        const vx = dx * invScaleX, vy = dy * invScaleY;
+        const cosA = Math.cos(-angle), sinA = Math.sin(-angle);
+        const tx = cosA * vx - sinA * vy;
+        const ty = sinA * vx + cosA * vy;
+        const tmpX = tx + cx;
+        const tmpY = ty + cy;
+        const origX = Math.round(tmpX * displayToOriginal);
+        const origY = Math.round(tmpY * displayToOriginal);
+        return {x: origX, y: origY};
+      });
+      const xs = mapped.map(p=>p.x), ys = mapped.map(p=>p.y);
+      const minX = Math.max(0, Math.min(...xs));
+      const minY = Math.max(0, Math.min(...ys));
+      const maxX = Math.max(...xs);
+      const maxY = Math.max(...ys);
+      return { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
+    }
+
+    function mapOriginalCropToDisplayRect(crop, s){
+      // crop в координатах оригинального изображения -> возвращаем rect в координатах canvas
+      const w = editorCanvas.width, h = editorCanvas.height;
+      const cx = w/2, cy = h/2;
+      const angle = (((s.rotation % 360) + 360) % 360) * Math.PI/180;
+      const scaleX = s.flipH ? -1 : 1;
+      const scaleY = s.flipV ? -1 : 1;
+      const cosA = Math.cos(angle), sinA = Math.sin(angle);
+      const corners = [
+        {x: crop.x, y: crop.y},
+        {x: crop.x + crop.w, y: crop.y},
+        {x: crop.x, y: crop.y + crop.h},
+        {x: crop.x + crop.w, y: crop.y + crop.h}
+      ].map(pt => {
+        // tmp (до поворота) — это scaled оригинал
+        const tmpX = pt.x * displayScale;
+        const tmpY = pt.y * displayScale;
+        const vx = tmpX - cx, vy = tmpY - cy;
+        const px = scaleX * (cosA * vx - sinA * vy);
+        const py = scaleY * (sinA * vx + cosA * vy);
+        return { x: px + cx, y: py + cy };
+      });
+      const xs = corners.map(p=>p.x), ys = corners.map(p=>p.y);
+      const minX = Math.min(...xs), minY = Math.min(...ys), maxX = Math.max(...xs), maxY = Math.max(...ys);
+      return { x: Math.round(minX), y: Math.round(minY), w: Math.round(Math.max(1, maxX - minX)), h: Math.round(Math.max(1, maxY - minY)) };
+    }
+    // --- /helper ---
 
     async function openEditor(idx){
       if (idx <0 || idx >= files.length) return;
       editingIndex = idx;
       const f = files[idx];
-      editorTitle.textContent = `Редактирование — ${f.name}`;
+      const t = TRANSLATIONS[langSelect.value];
+      editorTitle.textContent = `${t.editorTitle} — ${f.name}`;
       editorInfo.textContent = '';
       currentImg = new Image();
       currentImg.src = f.originalDataUrl;
@@ -450,18 +538,22 @@
       editorCanvas.style.width = w + 'px'; editorCanvas.style.height = h + 'px';
       if (f.settings.crop){
         const c = f.settings.crop;
-        dragRect = { x: Math.round(c.x * scale), y: Math.round(c.y * scale), w: Math.round(c.w * scale), h: Math.round(c.h * scale) };
-      } else { dragRect = null; }
+        // корректно отображаем сохранённую обрезку с учётом поворота/флипов
+        dragRect = mapOriginalCropToDisplayRect(c, f.settings);
+      } else {
+        dragRect = null;
+      }
       drawEditorCanvas();
       attachCanvasEvents();
       origSizeEl.textContent = `${currentImg.naturalWidth}×${currentImg.naturalHeight}`;
       editorModal.style.display = 'flex';
     }
 
-    function updateTransformInfo(){
-      if (editingIndex <0) return;
-      const s = files[editingIndex].settings;
-      curTransformEl.textContent = `R${s.rotation} ${s.flipH?'H':''}${s.flipV?'V':''} ${s.bw?'BW':''} C:${s.contrast}`;
+    function updateTransformInfo(){ 
+      if (editingIndex < 0) return; 
+      const s = files[editingIndex].settings; 
+      const cropInfo = s.crop ? `C:${s.crop.w}x${s.crop.h}` : '';
+      curTransformEl.textContent = `R${s.rotation}° ${s.flipH?'H':''}${s.flipV?'V':''} ${s.bw?'BW':''} K:${s.contrast.toFixed(1)} ${cropInfo}`.trim(); 
     }
 
     function drawEditorCanvas(){
@@ -473,6 +565,7 @@
       const tmp = document.createElement('canvas');
       tmp.width = editorCanvas.width; tmp.height = editorCanvas.height;
       const tctx = tmp.getContext('2d');
+      // рисуем оригинал, масштабируя под tmp (до поворота)
       tctx.drawImage(currentImg, 0, 0, currentImg.naturalWidth, currentImg.naturalHeight, 0, 0, tmp.width, tmp.height);
       try {
         const imgData = tctx.getImageData(0,0,tmp.width,tmp.height);
@@ -545,48 +638,68 @@
       editorCanvas.ontouchend = (ev) => { isDragging = false; dragStart = null; drawEditorCanvas(); };
     }
 
-    // editor controls
     edContrast.addEventListener('input', ()=>{ edContrastVal.textContent = Number(edContrast.value).toFixed(2); if (editingIndex>=0){ files[editingIndex].settings.contrast = Number(edContrast.value); updateTransformInfo(); drawEditorCanvas(); } });
     edBW.addEventListener('change', ()=>{ if (editingIndex>=0){ files[editingIndex].settings.bw = edBW.checked; updateTransformInfo(); drawEditorCanvas(); } });
     rotLeft.addEventListener('click', ()=>{ rotateEditor(-90); });
     rotRight.addEventListener('click', ()=>{ rotateEditor(90); });
     flipHBtn.addEventListener('click', ()=>{ toggleFlip('H'); });
     flipVBtn.addEventListener('click', ()=>{ toggleFlip('V'); });
+
+    // Универсальная функция: устанавливает обрезку из текущего dragRect с учётом трансформаций.
+    function setCropFromRect(silent){
+      if (editingIndex<0) return false;
+      const t = TRANSLATIONS[langSelect.value];
+      if (!dragRect || dragRect.w < 5 || dragRect.h < 5) {
+        if (!silent) alert(t.selectArea);
+        return false;
+      }
+      const s = files[editingIndex].settings;
+      const origCrop = mapDisplayRectToOriginal(dragRect, s);
+      files[editingIndex].settings.crop = origCrop;
+      updateTransformInfo();
+      drawEditorCanvas();
+      if (!silent) alert(t.cropSet);
+      return true;
+    }
+
+    function applyCropFromRect(){
+      setCropFromRect(false);
+    }
+
     applyCropBtn.addEventListener('click', ()=>{ applyCropFromRect(); });
     resetBtn.addEventListener('click', ()=>{ resetEditor(); });
     closeEditorBtn.addEventListener('click', ()=>{ editorModal.style.display='none'; editingIndex=-1; currentImg=null; });
-    applyBtn.addEventListener('click', async ()=>{ await saveEdited(); editorModal.style.display='none'; editingIndex=-1; currentImg=null; renderList(); });
-    applyAndClose.addEventListener('click', async ()=>{ await saveEdited(); editorModal.style.display='none'; editingIndex=-1; currentImg=null; renderList(); });
+    applyBtn.addEventListener('click', async ()=>{
+      // если есть выделение (dragRect), но пользователь не нажал "Применить обрезку", — применяем автоматически (без alert).
+      if (editingIndex >= 0 && dragRect && (!files[editingIndex].settings.crop || files[editingIndex].settings.crop.w === 0 || files[editingIndex].settings.crop.h === 0)){
+        setCropFromRect(true);
+      }
+      await saveEdited();
+      editorModal.style.display='none';
+      editingIndex=-1; currentImg=null;
+      renderList();
+    });
+    applyAndClose.addEventListener('click', async ()=>{
+      if (editingIndex >= 0 && dragRect && (!files[editingIndex].settings.crop || files[editingIndex].settings.crop.w === 0 || files[editingIndex].settings.crop.h === 0)){
+        setCropFromRect(true);
+      }
+      await saveEdited();
+      editorModal.style.display='none';
+      editingIndex=-1; currentImg=null;
+      renderList();
+    });
     toPrev.addEventListener('click', ()=>{ if (editingIndex>0) { openEditor(editingIndex-1); }});
     toNext.addEventListener('click', ()=>{ if (editingIndex < files.length-1) { openEditor(editingIndex+1); }});
 
     function rotateEditor(delta){ if (editingIndex<0) return; const s = files[editingIndex].settings; s.rotation = ( (s.rotation + delta) % 360 + 360 ) % 360; updateTransformInfo(); drawEditorCanvas(); }
     function toggleFlip(dir){ if (editingIndex<0) return; const s = files[editingIndex].settings; if (dir==='H') s.flipH = !s.flipH; if (dir==='V') s.flipV = !s.flipV; updateTransformInfo(); drawEditorCanvas(); }
 
-    function applyCropFromRect(){
-      if (editingIndex<0) return;
-      if (!dragRect) return alert('Сначала выдели область обрезки на картинке.');
-      const rect = dragRect;
-      const scale = displayToOriginal;
-      files[editingIndex].settings.crop = { x: Math.round(rect.x * scale), y: Math.round(rect.y * scale), w: Math.round(rect.w * scale), h: Math.round(rect.h * scale) };
-      drawEditorCanvas();
-      alert('Обрезка установлена (в оригинальных пикселях). Нажми Save, чтобы сохранить изменения.');
-    }
-
-    function resetEditor(){ if (editingIndex<0) return; const s = files[editingIndex].settings; s.rotation = 0; s.flipH=false; s.flipV=false; s.contrast=1.2; s.bw=false; s.crop = null; edContrast.value = s.contrast; edContrastVal.textContent = Number(s.contrast).toFixed(2); edBW.checked = s.bw; dragRect = null; updateTransformInfo(); drawEditorCanvas(); }
-
     async function saveEdited(){ if (editingIndex<0) return; const f = files[editingIndex]; const dataUrl = await processImageToDataUrl(f); f.editedDataUrl = dataUrl; renderList(); }
 
-    processAllBtn.addEventListener('click', async ()=>{
-      if (!files.length) return alert('Нет файлов.');
-      processAllBtn.textContent = 'Обработка...'; processAllBtn.disabled = true;
-      for (let i=0;i<files.length;i++){ const dataUrl = await processImageToDataUrl(files[i]); files[i].editedDataUrl = dataUrl; }
-      processAllBtn.textContent = TRANSLATIONS[langSelect.value].applyAll; processAllBtn.disabled = false; renderList(); alert('Готово — все изображения обработаны (превью обновлён).');
-    });
-
     downloadBtn.addEventListener('click', async ()=>{
-      if (!files.length) return alert('Нет файлов для скачивания.');
-      downloadBtn.textContent = 'Генерация PDF...'; downloadBtn.disabled = true;
+      const t = TRANSLATIONS[langSelect.value];
+      if (!files.length) return alert(t.noFiles);
+      downloadBtn.textContent = t.generating; downloadBtn.disabled = true;
       for (let i=0;i<files.length;i++){ if (!files[i].editedDataUrl) { files[i].editedDataUrl = await processImageToDataUrl(files[i]); } }
       try {
         const { jsPDF } = window.jspdf;
@@ -595,18 +708,17 @@
         pdf.addImage(files[0].editedDataUrl, 'JPEG', 0, 0, firstImg.width, firstImg.height);
         for (let i=1;i<files.length;i++){ const im = await loadImage(files[i].editedDataUrl); pdf.addPage([im.width, im.height]); pdf.addImage(files[i].editedDataUrl, 'JPEG', 0, 0, im.width, im.height); }
         const outName = (filenameInput.value.trim() || 'documents') + '.pdf'; pdf.save(outName);
-      } catch (err){ console.error(err); alert('Ошибка при генерации PDF: ' + (err?.message || err)); }
-      downloadBtn.textContent = TRANSLATIONS[langSelect.value].download; downloadBtn.disabled = false;
+      } catch (err){ console.error(err); alert('PDF yaratishda xatolik: ' + (err?.message || err)); }
+      downloadBtn.textContent = t.download; downloadBtn.disabled = false;
     });
 
-    // Merge feature: requires exactly 2 selected files. We'll stack them vertically into one merged image.
     mergeBtn.addEventListener('click', async ()=>{
+      const t = TRANSLATIONS[langSelect.value];
       const sel = files.filter(f=>f.selected);
-      if (sel.length !== 2) return alert('Выберите ровно 2 файла для объединения.');
-      mergeBtn.textContent = 'Объединяем...'; mergeBtn.disabled = true;
+      if (sel.length !== 2) return alert(t.selectTwo);
+      mergeBtn.textContent = t.merging; mergeBtn.disabled = true;
       try{
         const d1 = await loadImage(sel[0].originalDataUrl); const d2 = await loadImage(sel[1].originalDataUrl);
-        // make both images same width (max of both) and stack vertically
         const targetW = Math.max(d1.width, d2.width);
         const scale1 = targetW / d1.width; const scale2 = targetW / d2.width;
         const h1 = Math.round(d1.height * scale1); const h2 = Math.round(d2.height * scale2);
@@ -615,52 +727,104 @@
         ctx.drawImage(d1.img, 0, 0, d1.width, d1.height, 0, 0, targetW, h1);
         ctx.drawImage(d2.img, 0, 0, d2.width, d2.height, 0, h1, targetW, h2);
         const mergedDataUrl = canvas.toDataURL('image/jpeg',0.95);
-        // create a new file entry
         const id = uid();
         files.push({ id, name: `merged_${sel[0].name.replace(/\s+/g,'_')}_${sel[1].name.replace(/\s+/g,'_')}.jpg`, file: null, previewUrl: mergedDataUrl, originalDataUrl: mergedDataUrl, naturalWidth: canvas.width, naturalHeight: canvas.height, settings: { rotation:0, flipH:false, flipV:false, contrast:1.2, bw:false, crop:null }, editedDataUrl: mergedDataUrl, selected:false });
         renderList();
-        alert('Файлы объединены и добавлены в список.');
-      } catch(e){ console.error(e); alert('Ошибка при объединении: '+(e?.message||e)); }
-      mergeBtn.textContent = TRANSLATIONS[langSelect.value].merge; mergeBtn.disabled = false;
+        alert(t.merged);
+      } catch(e){ console.error(e); alert('Xatolik: '+(e?.message||e)); }
+      mergeBtn.textContent = t.merge; mergeBtn.disabled = false;
     });
 
-    // helper: load image from dataURL
     function loadImage(dataUrl){
       return new Promise(res=>{ const img = new Image(); img.onload = () => res({ img, width: img.naturalWidth, height: img.naturalHeight }); img.src = dataUrl; });
     }
 
-    // MAIN image processing
     async function processImageToDataUrl(fileObj){
       const srcImg = await new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.src=fileObj.originalDataUrl; });
       let s = fileObj.settings;
+      
+      // Применяем обрезку к исходному изображению (учитываем crop, сохранённый в оригинальных координатах)
       let sx = 0, sy = 0, sw = srcImg.naturalWidth, sh = srcImg.naturalHeight;
-      if (s.crop && typeof s.crop.x === 'number'){
-        sx = s.crop.x; sy = s.crop.y; sw = s.crop.w; sh = s.crop.h;
-        sx = Math.max(0, Math.min(sx, srcImg.naturalWidth-1)); sy = Math.max(0, Math.min(sy, srcImg.naturalHeight-1)); sw = Math.max(1, Math.min(sw, srcImg.naturalWidth - sx)); sh = Math.max(1, Math.min(sh, srcImg.naturalHeight - sy));
+      if (s.crop && s.crop.w > 0 && s.crop.h > 0){
+        sx = Math.max(0, Math.min(s.crop.x, srcImg.naturalWidth - 1));
+        sy = Math.max(0, Math.min(s.crop.y, srcImg.naturalHeight - 1));
+        sw = Math.max(1, Math.min(s.crop.w, srcImg.naturalWidth - sx));
+        sh = Math.max(1, Math.min(s.crop.h, srcImg.naturalHeight - sy));
       }
+      
+      // Создаем временный canvas с обрезанным изображением
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = sw;
+      tempCanvas.height = sh;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, sw, sh);
+      
+      // Теперь работаем с обрезанным изображением
       let dstW = sw, dstH = sh;
       const rot = ((s.rotation % 360) + 360) % 360;
-      if (rot === 90 || rot === 270) { dstW = sh; dstH = sw; }
-      const MAX_DIM = 2500; let scale = Math.min(1, MAX_DIM / Math.max(dstW, dstH));
-      const canvasW = Math.max(1, Math.round(dstW * scale)); const canvasH = Math.max(1, Math.round(dstH * scale));
-      const srcCanvas = document.createElement('canvas'); srcCanvas.width = Math.round(sw * scale); srcCanvas.height = Math.round(sh * scale);
-      const sctx = srcCanvas.getContext('2d'); sctx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, srcCanvas.width, srcCanvas.height);
-      const destCanvas = document.createElement('canvas'); destCanvas.width = canvasW; destCanvas.height = canvasH; const dctx = destCanvas.getContext('2d');
-      dctx.save(); dctx.translate(destCanvas.width/2, destCanvas.height/2); const angle = rot * Math.PI/180; dctx.rotate(angle); const scaleX = s.flipH ? -1 : 1; const scaleY = s.flipV ? -1 : 1; dctx.scale(scaleX, scaleY); dctx.drawImage(srcCanvas, -srcCanvas.width/2, -srcCanvas.height/2, srcCanvas.width, srcCanvas.height); dctx.restore();
+      if (rot === 90 || rot === 270) { 
+        dstW = sh; 
+        dstH = sw; 
+      }
+      
+      const MAX_DIM = 2500;
+      let scale = Math.min(1, MAX_DIM / Math.max(dstW, dstH));
+      const canvasW = Math.max(1, Math.round(dstW * scale));
+      const canvasH = Math.max(1, Math.round(dstH * scale));
+      
+      // Применяем трансформации
+      const destCanvas = document.createElement('canvas');
+      destCanvas.width = canvasW;
+      destCanvas.height = canvasH;
+      const dctx = destCanvas.getContext('2d');
+      
+      dctx.save();
+      dctx.translate(destCanvas.width/2, destCanvas.height/2);
+      const angle = rot * Math.PI/180;
+      dctx.rotate(angle);
+      const scaleX = s.flipH ? -1 : 1;
+      const scaleY = s.flipV ? -1 : 1;
+      dctx.scale(scaleX, scaleY);
+      
+      // Рисуем обрезанное изображение с масштабированием
+      const drawW = Math.round(sw * scale);
+      const drawH = Math.round(sh * scale);
+      dctx.drawImage(tempCanvas, -drawW/2, -drawH/2, drawW, drawH);
+      dctx.restore();
+      
+      // Применяем фильтры
       try {
-        const imgData = dctx.getImageData(0,0,destCanvas.width,destCanvas.height); const data = imgData.data; const contrast = Number(s.contrast) || 1; const bw = !!s.bw; for (let i=0;i<data.length;i+=4){ let r = data[i], g = data[i+1], b = data[i+2]; let lum = 0.299*r + 0.587*g + 0.114*b; lum = ((lum - 128) * contrast) + 128; if (bw){ const v = clamp(lum); data[i]=data[i+1]=data[i+2]=v; } else { data[i] = clamp(((r-128)*contrast)+128); data[i+1] = clamp(((g-128)*contrast)+128); data[i+2] = clamp(((b-128)*contrast)+128); } } dctx.putImageData(imgData,0,0);
-      } catch (err){ console.warn('ImageData manipulation failed, skipping pixel-level filters for this image.', err); }
+        const imgData = dctx.getImageData(0, 0, destCanvas.width, destCanvas.height);
+        const data = imgData.data;
+        const contrast = Number(s.contrast) || 1;
+        const bw = !!s.bw;
+        
+        for (let i = 0; i < data.length; i += 4){
+          let r = data[i], g = data[i+1], b = data[i+2];
+          
+          if (bw){
+            let lum = 0.299*r + 0.587*g + 0.114*b;
+            lum = ((lum - 128) * contrast) + 128;
+            const v = clamp(lum);
+            data[i] = data[i+1] = data[i+2] = v;
+          } else {
+            data[i] = clamp(((r-128)*contrast)+128);
+            data[i+1] = clamp(((g-128)*contrast)+128);
+            data[i+2] = clamp(((b-128)*contrast)+128);
+          }
+        }
+        dctx.putImageData(imgData, 0, 0);
+      } catch (err){ 
+        console.warn('ImageData manipulation failed:', err);
+      }
+      
       const dataUrl = destCanvas.toDataURL('image/jpeg', 0.95);
       return dataUrl;
     }
 
     function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
 
-    function updateEditorUI(){ if (editingIndex <0) return; const s = files[editingIndex].settings; edContrast.value = s.contrast; edContrastVal.textContent = Number(s.contrast).toFixed(2); edBW.checked = s.bw; updateTransformInfo(); drawEditorCanvas(); }
-
-    // expose files for debug
     window.bobotog_get_files = () => files;
-
   })();
   </script>
 </body>
